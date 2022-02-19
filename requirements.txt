@@ -1,0 +1,2 @@
+stable-baselines
+tensorflow==1.13.2
