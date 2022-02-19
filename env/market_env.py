@@ -130,6 +130,9 @@ class MarketEnv(gym.Env):
                     self.Xs[self.agent_t] = action
                 else:
                     self.Xs[self.agent_t] = action[-1]
+
+            if np.sum(self.Xs == 1):
+                self.done = True
             
             self.Ps[self.agent_t + 1] = self.get_price_at_t(self.agent_t)
             self.cost += self.Xs[self.agent_t] * self.Ps[self.agent_t + 1]
