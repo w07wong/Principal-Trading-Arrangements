@@ -98,8 +98,8 @@ class MarketEnv(gym.Env):
             Calculates the price impact model at timestep t.
         '''
         price = self.Ps[0] + self.lam * self.Xs[t] + self.theta * np.sum(self.Xs) + np.sum(self.epsilons[:t])
-        price = min(self.min_price, price)
-        price = max(self.max_price, price)
+        price = max(self.min_price, price)
+        price = min(self.max_price, price)
         return price
 
     def step(self, action):
