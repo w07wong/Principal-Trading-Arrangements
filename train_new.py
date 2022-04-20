@@ -29,34 +29,43 @@ from stable_baselines.ddpg import MlpPolicy
 
 def run(args):
     principal_model, agent_model = args.principal_model, args.agent_model
+    if agent_model is not None:
+        agent_model = PPO2.load(agent_model)
+    if principal_model is not None:
+        principal_model = DDPG.load(principal_model)
+
     for _ in range(args.n_games):
-        # Create the agent environment, passing in a pretrained principal model.
-        agent_env = make_vec_env(lambda: AgentEnv(principal_model, theta=args.theta, lam=args.lam, sigma=args.sigma, T=args.T), n_envs=96)
+        if not args.disable_agent:
+            # Create the agent environment, passing in a pretrained principal model.
+            agent_env = make_vec_env(lambda: AgentEnv(principal_model, theta=args.theta, lam=args.lam, sigma=args.sigma, T=args.T), n_envs=96)
 
-        # Define agent model to train.
-        agent_model = PPO2(CustomPolicy, agent_env, verbose=1, lam=0.8, gamma=0.99, learning_rate=agent_lr, n_steps=96)
+            # Define agent model to train.
+            agent_model = PPO2(CustomPolicy, agent_env, verbose=1, lam=0.8, gamma=0.99, learning_rate=agent_lr, n_steps=96)
 
-        # Train agent model.
-        agent_model.learn(total_timesteps=args.agent_timesteps)
+            # Train agent model.
+            agent_model.learn(total_timesteps=args.agent_timesteps)
 
-        # Create gym environments, passing in the pretrained agent.
-        principal_env =  make_vec_env(lambda: PrincipalEnv(agent_model, agent_env, theta=args.theta, lam=args.lam, sigma=args.sigma, T=args.T), n_envs=1)
+        if not args.disable_principal:
+            # Create gym environments, passing in the pretrained agent.
+            principal_env =  make_vec_env(lambda: PrincipalEnv(agent_model, agent_env, theta=args.theta, lam=args.lam, sigma=args.sigma, T=args.T), n_envs=1)
 
-        # Add some action noise for TD3 algorithm which trains principal.
-        principal_n_actions = principal_env.action_space.shape[-1]
-        principal_action_noise = NormalActionNoise(mean=np.zeros(principal_n_actions), sigma=0.5 * np.ones(principal_n_actions))
+            # Add some action noise for TD3 algorithm which trains principal.
+            principal_n_actions = principal_env.action_space.shape[-1]
+            principal_action_noise = NormalActionNoise(mean=np.zeros(principal_n_actions), sigma=0.5 * np.ones(principal_n_actions))
 
-        # Define principal model to train.
-        # principal_model = TD3(MlpPolicy, principal_env, verbose=1, learning_rate=1e-3, action_noise=principal_action_noise)
-        principal_model = DDPG(MlpPolicy, principal_env, verbose=1, param_noise=None, action_noise=principal_action_noise)
+            # Define principal model to train.
+            # principal_model = TD3(MlpPolicy, principal_env, verbose=1, learning_rate=1e-3, action_noise=principal_action_noise)
+            principal_model = DDPG(MlpPolicy, principal_env, verbose=1, param_noise=None, action_noise=principal_action_noise)
 
-        # Train principal model.
-        principal_model.learn(total_timesteps=args.principal_timesteps)
+            # Train principal model.
+            principal_model.learn(total_timesteps=args.principal_timesteps)
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
-    agent_model.save(f'{args.save_dir}/agent')
-    principal_model.save(f'{args.save_dir}/principal')
+    if not args.disable_agent:
+        agent_model.save(f'{args.save_dir}/agent')
+    if not args.disable_principal:
+        principal_model.save(f'{args.save_dir}/principal')
     
 
 if __name__=="__main__":
@@ -80,11 +89,17 @@ if __name__=="__main__":
                         help='path to trained agent model (defaults to none)')
     parser.add_argument('--principal_model', type=str, default=None, 
                         help='path to trained principal model (defaults to none)')
+    parser.add_argument('--disable_agent', action='store_true', help='freeze agent model')
+    parser.add_argument('--disable_principal', action='store_true', help='freeze principal model')
     parser.add_argument('--save_dir', type=str, required=True,
                         help='path to save models to')
 
     args = parser.parse_args()
 
+    if args.disable_agent:
+        assert(args.agent_model is not None)
+    if args.disable_principal:
+        assert(args.principal_model is not None)
 
     # Set custom learning rate schedule for agent.
     agent_lr = PiecewiseSchedule([(0, 7e-3), (100000, 1e-4), (1000000, 1e-6), (args.agent_timesteps, 1e-10)]).value
