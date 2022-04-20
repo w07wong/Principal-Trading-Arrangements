@@ -7,13 +7,15 @@ def run(args):
     principal_model = DDPG.load(args.principal_model)
     agent_model = PPO2.load(args.agent_model)
 
-    agent_r, best_r, diff_r = get_scores(principal_model, agent_model, n_avg=args.n_avg, 
-                                        theta=args.theta, lam=args.lam, sigma=args.sigma, T=args.T)
+    agent_r, best_agent_r, diff_agent, principal_r, best_principal_r, diff_principal = get_scores(principal_model,
+        agent_model, n_avg=args.n_avg, theta=args.theta, lam=args.lam, sigma=args.sigma, T=args.T)
     
     print('Average learned agent reward: {}, Variance: {}'.format(np.mean(agent_r), np.std(agent_r) ** 2))
-    print('Average optimal agent reward: {}, Variance: {}'.format(np.mean(best_r), np.std(best_r) ** 2))
-    print('Average difference: {}'.format(np.mean(diff_r)))
-
+    print('Average optimal agent reward: {}, Variance: {}'.format(np.mean(best_agent_r), np.std(best_agent_r) ** 2))
+    print('Average difference: {}'.format(np.mean(diff_agent)))
+    print('Average learned principal reward: {}, Variance: {}'.format(np.mean(principal_r), np.std(principal_r) ** 2))
+    print('Average optimal principal reward: {}, Variance: {}'.format(np.mean(best_principal_r), np.std(best_principal_r) ** 2))
+    print('Average difference: {}'.format(np.mean(diff_principal)))
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()

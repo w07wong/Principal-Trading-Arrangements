@@ -1,3 +1,4 @@
+import os
 import argparse
 import numpy as np
 import gym
@@ -52,6 +53,12 @@ def run(args):
         # Train principal model.
         principal_model.learn(total_timesteps=args.principal_timesteps)
 
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
+    agent_model.save(f'{args.save_dir}/agent')
+    principal_model.save(f'{args.save_dir}/principal')
+    
+
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--theta', type=float, default=1.0,
@@ -73,6 +80,8 @@ if __name__=="__main__":
                         help='path to trained agent model (defaults to none)')
     parser.add_argument('--principal_model', type=str, default=None, 
                         help='path to trained principal model (defaults to none)')
+    parser.add_argument('--save_dir', type=str, required=True,
+                        help='path to save models to')
 
     args = parser.parse_args()
 
