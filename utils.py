@@ -113,3 +113,35 @@ def get_scores(principal_model, agent_model, n_avg=100, theta=1, lam=1, sigma=1,
         # print('contract optimal', copt)
     
     return agent_r, best_agent_r, diff_agent, principal_r, best_principal_r, diff_principal
+
+
+def get_cvar_scores(principal_model, agent_model, n_avg=100, cvar_alpha=1, num_cvar_runs=1, theta=1, lam=1, sigma=1, T=10):
+    env = make_vec_env(lambda: AgentEnv(principal_model, cvar_alpha=cvar_alpha, num_cvar_runs=num_cvar_runs, theta=theta, lam=lam, sigma=sigma, T=T), n_envs=1)
+    obs = env.reset()
+
+    agent_r, best_agent_r, diff_agent = [], [], []
+
+    for _ in range(n_avg):
+        agent_actions = []
+        agent_rewards = []
+        agent_observations = []
+        for i in range(T):
+            agent_observations.append(obs)
+            action, _ = agent_model.predict(obs)
+            obs, r, done, info = env.step(action)
+            
+            agent_actions.append(action[0][0])
+            agent_rewards.append(r[0])
+
+        agent_actions[-1] = 1 - sum(agent_actions[:-1])
+        contract = agent_observations[0][0][1:-(T+1)]
+
+        xopt, agent_reward, best_agent_reward, principal_reward, copt, best_principal_reward = opt(contract, agent_actions, theta, lam, T)
+        # print('agent optimal', xopt)
+        # print('agent learned', agent_actions)
+        # print('agent reward', agentreward)
+        # print('best reward', bestreward)
+        agent_r.append(agent_reward)
+        best_agent_r.append(best_agent_reward)
+        diff_agent.append(best_agent_reward - agent_reward)
+        # print('contract optimal', copt)
