@@ -102,7 +102,7 @@ if __name__=="__main__":
         assert(args.principal_model is not None)
 
     # Set custom learning rate schedule for agent.
-    agent_lr = PiecewiseSchedule([(0, 7e-3), (100000, 1e-4), (1000000, 1e-6), (args.agent_timesteps, 1e-10)]).value
+    agent_lr = PiecewiseSchedule([(0, 7e-3), (100000, 1e-4), (1000000, 1e-6), (1200000, 1e-10)]).value
     args.agent_lr = agent_lr
 
     # Set custom learning rate schedule for principal.
