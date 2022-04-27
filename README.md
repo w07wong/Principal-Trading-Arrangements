@@ -17,3 +17,5 @@ We also experimnted with a multi-agent gym environment during initial experiment
 
 ## Evaluation
 Once you have trained agents, you can run ```eval.py``` to get the average performance of your learned models verus the analytic solution provided in [Baldauf et al. 2021](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3778956).
+
+Evaluation requires providing paths to the trained agent and principal models as arguments. Our trained models can be found here: [Principal](https://drive.google.com/file/d/18wmiDD5vzuyz0fEfpkpjgxE2k8fopyAI/view?usp=sharing), [Agent](https://drive.google.com/file/d/1AzBdEFF8C37UhXgw6NvnOtN3hmeW2zI6/view?usp=sharing).
