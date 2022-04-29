@@ -7,6 +7,8 @@ To run experiments for the CVaR minimization alternating training framework, run
 
 Both alternate trading frameworks run TD3 for the principal and PPO2 for the agent. Pass in any experimental parameters using the flags provided in the files.
 
+For the nonliear contracts, the training scripts can be found in ```notebooks/nonlinear-contracts.ipynb```.
+
 ## Gym Environments
 The agent gym environment for reward maximization is contained in ```env/agent_env.py``` under the class AgentEnv. The agent gym environment for CVaR minimization is contained in ```env/agent_env_cvar.py``` under the class AgentEnv_CVaR. We approximate minimizing CVaR by providing the agent the CVaR of possible rewards at every time step.
 
